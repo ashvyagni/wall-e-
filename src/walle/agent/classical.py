@@ -45,6 +45,8 @@ class ClassicalPlanner:
     planner_name = "classical"
 
     def __init__(self, view: AgentView) -> None:
+        if not isinstance(view, AgentView):
+            view = AgentView.model_validate(view)
         self.view = view
         self.obstacles = frozenset(view.map.obstacles)
         self.belief = BeliefGrid(view.map, view.sensors, self.obstacles)
@@ -335,7 +337,7 @@ class ClassicalPlanner:
                         action=Action.move(step),
                         planner=self.planner_name,
                         reason=f"approaching MAP cell {map_pos} to declare (conf {conf:.2f})",
-                        extras={"target": list(map_pos), "confidence": conf},
+                        extras={"approach_cell": list(map_pos), "confidence": conf},
                     )
 
         # 2. battery policy
@@ -373,7 +375,7 @@ class ClassicalPlanner:
                             action=Action.move(step),
                             planner=self.planner_name,
                             reason=f"battery {obs.battery}: heading to recharge station {st}",
-                            extras={"target": list(st)},
+                            extras={"station": list(st)},
                         )
             if cost_home is not None and cost_home * self._move_cost + reserve <= obs.battery:
                 self.turn_back_tick = obs.tick
