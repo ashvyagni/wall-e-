@@ -1,0 +1,58 @@
+{
+  "n": 100,
+  "successes": 97,
+  "success_rate": 0.97,
+  "terminals": {
+    "EVE_LOCATED_SUCCESS": 97,
+    "RETURNED_NO_EVIDENCE": 1,
+    "BATTERY_EXHAUSTED_ABORTED": 2
+  },
+  "mean_steps": 34.49,
+  "mean_error": 0.38584,
+  "planner": "classical",
+  "template": "configs/sample_basic.json",
+  "protocol": "bench/PROTOCOL.md v1.0",
+  "seeds_sha256_16": "e3c6f79d2dd851f3",
+  "git_commit": "76b6f73",
+  "host": "macOS-26.3.1-arm64-arm-64bit",
+  "analysis": {
+    "success_rate_ci95_wilson": [
+      0.9155,
+      0.9897
+    ],
+    "mean_error_all_ci95_t": [
+      -0.061,
+      0.833
+    ],
+    "mean_steps_ci95_t": [
+      24.78,
+      44.2
+    ],
+    "mean_battery_used_ci95_t": [
+      28.401,
+      43.559
+    ],
+    "median_steps": 23.0,
+    "median_error_all": 0.0,
+    "mean_error_successes_only": 0.0,
+    "max_invalid_actions": 0,
+    "exceptions": 0,
+    "hypotheses": {
+      "H1_success_ge_0.85": {
+        "observed": 0.97,
+        "ci95": [
+          0.9155,
+          0.9897
+        ],
+        "verdict": "PASS"
+      },
+      "H2_mean_error_le_2.0": {
+        "observed": 0.386,
+        "verdict": "PASS"
+      },
+      "H3_llm": {
+        "verdict": "REPORT-ONLY (llm planner not yet implemented)"
+      }
+    }
+  }
+}
