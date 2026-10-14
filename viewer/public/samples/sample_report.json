@@ -1,0 +1,45 @@
+{
+  "schema_version": "1.0",
+  "mission_id": "sample_basic",
+  "seed": 42,
+  "planner": "classical",
+  "generated_by": "walle",
+  "outcome": {
+    "terminal": "EVE_LOCATED_SUCCESS",
+    "successful": true,
+    "steps": 148,
+    "ticks_used": 156,
+    "battery_used": 141,
+    "battery_remaining": 79
+  },
+  "evidence": [
+    {"clue_id": "clue_01", "kind": "footprint", "pos": [3, 8], "description": "Tread pattern matches EVE's hull unit.", "tick": 31},
+    {"clue_id": "clue_02", "kind": "scorch_mark", "pos": [9, 3], "description": "Fresh scorch mark on the hull plating — EVE passed through recently.", "tick": 42}
+  ],
+  "inference": {
+    "eve_location": [17, 12],
+    "status": "located",
+    "confidence": 0.87,
+    "recommended_next_step": "EVE located and confirmed by declare_found; return to home with evidence log and stand by for directive."
+  },
+  "strategy": {
+    "phases": [
+      {"name": "signal_acquisition", "start_tick": 0, "end_tick": 31, "note": "Systematic sweep from home until first signal lock."},
+      {"name": "gradient_follow", "start_tick": 31, "end_tick": 120, "note": "Followed strength gradient north-east, recharging once at [10, 7]."},
+      {"name": "confirmation", "start_tick": 120, "end_tick": 156, "note": "Two scans to collapse posterior before declaring."}
+    ],
+    "recharges": 1,
+    "scans": 9,
+    "turn_back_tick": null
+  },
+  "evaluation": {
+    "true_eve_pos": [17, 12],
+    "localization_error": 0.0,
+    "clues_total": 4,
+    "clues_found": 2,
+    "invalid_action_count": 0,
+    "failed_claims": 0
+  },
+  "trace_path": "traces/sample_basic.jsonl",
+  "notes": ["Fixture report for schema compatibility tests; generated content is representative."]
+}
