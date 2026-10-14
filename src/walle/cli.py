@@ -9,6 +9,7 @@ from pathlib import Path
 
 import yaml
 
+from walle.agent.llm import ReplayMissError
 from walle.contracts import MissionConfig
 from walle.mission import planner_for, run_mission
 from walle.trace.writer import read_trace
@@ -25,13 +26,17 @@ def cmd_run(args: argparse.Namespace) -> int:
     cfg = load_config(Path(args.config))
     if args.planner:
         cfg = cfg.model_copy(update={"planner": args.planner})
-    planner = planner_for(cfg, args.planner)
+    planner = planner_for(cfg, args.planner, live=bool(args.live))
     out_dir = Path(args.out)
     report_dir = Path(args.reports)
     trace_path = out_dir / f"{cfg.mission_id}.jsonl"
     report_path = report_dir / f"{cfg.mission_id}_report.json"
 
-    result = run_mission(cfg, planner, trace_path, report_path)
+    try:
+        result = run_mission(cfg, planner, trace_path, report_path)
+    except ReplayMissError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
     r = result.report
     print(f"mission   : {r.mission_id} (seed {r.seed}, planner {r.planner})")
     print(f"terminal  : {r.outcome.terminal}  successful={r.outcome.successful}")
@@ -60,7 +65,13 @@ def main(argv: list[str] | None = None) -> int:
 
     run_p = sub.add_parser("run", help="run a mission from a config file")
     run_p.add_argument("config", help="path to mission config (json or yaml)")
-    run_p.add_argument("--planner", choices=["classical"], default=None)
+    run_p.add_argument("--planner", choices=["classical", "llm"], default=None)
+    run_p.add_argument(
+        "--live",
+        action="store_true",
+        help="allow the llm planner to call the API on cache misses "
+        "(requires WALLE_LLM_API_KEY/OPENAI_API_KEY; default is replay-only)",
+    )
     run_p.add_argument("--out", default="traces", help="trace output directory")
     run_p.add_argument("--reports", default="reports", help="report output directory")
     run_p.add_argument("--ascii", action="store_true", help="print ASCII map after run")

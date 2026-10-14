@@ -136,7 +136,7 @@ def run_mission(
     )
 
 
-def planner_for(cfg: MissionConfig, kind: str | None = None) -> Planner:
+def planner_for(cfg: MissionConfig, kind: str | None = None, *, live: bool = False) -> Planner:
     from walle.agent.base import AgentView
 
     chosen = kind or cfg.planner
@@ -144,4 +144,13 @@ def planner_for(cfg: MissionConfig, kind: str | None = None) -> Planner:
         from walle.agent.classical import ClassicalPlanner
 
         return ClassicalPlanner(AgentView.model_validate(cfg.agent_view()))
+    if chosen == "llm":
+        from walle.agent.llm import LLMPlanner
+
+        cache_path = Path("cache") / "llm" / f"{cfg.mission_id}.jsonl"
+        return LLMPlanner(
+            AgentView.model_validate(cfg.agent_view()),
+            cache_path=cache_path,
+            live=live,
+        )
     raise ValueError(f"unknown planner: {chosen}")
