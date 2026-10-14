@@ -1,0 +1,67 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "direction": {
+      "anyOf": [
+        {
+          "enum": [
+            "north",
+            "south",
+            "east",
+            "west"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Direction"
+    },
+    "position": {
+      "anyOf": [
+        {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            }
+          ],
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Position"
+    },
+    "schema_version": {
+      "const": "1.0",
+      "default": "1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "type": {
+      "enum": [
+        "move",
+        "scan",
+        "recharge",
+        "return_home",
+        "declare_found"
+      ],
+      "title": "Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "type"
+  ],
+  "title": "Action",
+  "type": "object"
+}

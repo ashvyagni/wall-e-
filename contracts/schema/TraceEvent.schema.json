@@ -1,0 +1,528 @@
+{
+  "$defs": {
+    "Action": {
+      "additionalProperties": false,
+      "properties": {
+        "direction": {
+          "anyOf": [
+            {
+              "enum": [
+                "north",
+                "south",
+                "east",
+                "west"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Direction"
+        },
+        "position": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Position"
+        },
+        "schema_version": {
+          "const": "1.0",
+          "default": "1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "move",
+            "scan",
+            "recharge",
+            "return_home",
+            "declare_found"
+          ],
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "Action",
+      "type": "object"
+    },
+    "BeliefSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "confidence": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "entropy_bits": {
+          "minimum": 0,
+          "title": "Entropy Bits",
+          "type": "number"
+        },
+        "map_pos": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            }
+          ],
+          "title": "Map Pos",
+          "type": "array"
+        },
+        "top_k": {
+          "default": [],
+          "items": {
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "maxItems": 2,
+                "minItems": 2,
+                "prefixItems": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "integer"
+                  }
+                ],
+                "type": "array"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array"
+          },
+          "title": "Top K",
+          "type": "array"
+        }
+      },
+      "required": [
+        "map_pos",
+        "confidence",
+        "entropy_bits"
+      ],
+      "title": "BeliefSummary",
+      "type": "object"
+    },
+    "ClueEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "clue_id": {
+          "title": "Clue Id",
+          "type": "string"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "footprint",
+            "scorch_mark",
+            "plant_sample",
+            "waste_scrap",
+            "signal_mirror"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "pos": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            }
+          ],
+          "title": "Pos",
+          "type": "array"
+        },
+        "tick": {
+          "title": "Tick",
+          "type": "integer"
+        },
+        "type": {
+          "const": "clue_discovered",
+          "default": "clue_discovered",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "clue_id",
+        "kind",
+        "pos",
+        "description",
+        "tick"
+      ],
+      "title": "ClueEvent",
+      "type": "object"
+    },
+    "DecisionRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "action_type": {
+          "title": "Action Type",
+          "type": "string"
+        },
+        "extras": {
+          "additionalProperties": true,
+          "title": "Extras",
+          "type": "object"
+        },
+        "options_considered": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Options Considered",
+          "type": "array"
+        },
+        "planner": {
+          "title": "Planner",
+          "type": "string"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "planner",
+        "action_type",
+        "reason"
+      ],
+      "title": "DecisionRecord",
+      "type": "object"
+    },
+    "Observation": {
+      "additionalProperties": false,
+      "properties": {
+        "agent_id": {
+          "title": "Agent Id",
+          "type": "string"
+        },
+        "battery": {
+          "title": "Battery",
+          "type": "integer"
+        },
+        "events": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ClueEvent"
+          },
+          "title": "Events",
+          "type": "array"
+        },
+        "last_action_error": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Last Action Error"
+        },
+        "last_action_valid": {
+          "default": true,
+          "title": "Last Action Valid",
+          "type": "boolean"
+        },
+        "max_battery": {
+          "title": "Max Battery",
+          "type": "integer"
+        },
+        "max_ticks": {
+          "title": "Max Ticks",
+          "type": "integer"
+        },
+        "position": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            }
+          ],
+          "title": "Position",
+          "type": "array"
+        },
+        "schema_version": {
+          "const": "1.0",
+          "default": "1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "sensor_status": {
+          "additionalProperties": {
+            "enum": [
+              "ok",
+              "degraded",
+              "failed"
+            ],
+            "type": "string"
+          },
+          "title": "Sensor Status",
+          "type": "object"
+        },
+        "signal": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SignalReading"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "tick": {
+          "title": "Tick",
+          "type": "integer"
+        },
+        "visible_cells": {
+          "items": {
+            "$ref": "#/$defs/VisibleCell"
+          },
+          "title": "Visible Cells",
+          "type": "array"
+        }
+      },
+      "required": [
+        "tick",
+        "agent_id",
+        "position",
+        "signal",
+        "visible_cells",
+        "battery",
+        "max_battery",
+        "max_ticks"
+      ],
+      "title": "Observation",
+      "type": "object"
+    },
+    "SignalReading": {
+      "additionalProperties": false,
+      "properties": {
+        "bearing_deg": {
+          "title": "Bearing Deg",
+          "type": "number"
+        },
+        "measured_from": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            }
+          ],
+          "title": "Measured From",
+          "type": "array"
+        },
+        "strength": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Strength",
+          "type": "number"
+        },
+        "timestamp_tick": {
+          "title": "Timestamp Tick",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "bearing_deg",
+        "strength",
+        "measured_from",
+        "timestamp_tick"
+      ],
+      "title": "SignalReading",
+      "type": "object"
+    },
+    "TerminalState": {
+      "enum": [
+        "EVE_LOCATED_SUCCESS",
+        "EVE_LOCATE_FAILED",
+        "RETURNED_NO_EVIDENCE",
+        "BATTERY_EXHAUSTED_ABORTED",
+        "TIMEOUT_ABORTED",
+        "INVALID_ACTION_ABORTED"
+      ],
+      "title": "TerminalState",
+      "type": "string"
+    },
+    "VisibleCell": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "free",
+            "obstacle",
+            "recharge",
+            "home"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "pos": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            }
+          ],
+          "title": "Pos",
+          "type": "array"
+        }
+      },
+      "required": [
+        "pos",
+        "kind"
+      ],
+      "title": "VisibleCell",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "action": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Action"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "agent_id": {
+      "title": "Agent Id",
+      "type": "string"
+    },
+    "battery": {
+      "title": "Battery",
+      "type": "integer"
+    },
+    "belief": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/BeliefSummary"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "decision": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/DecisionRecord"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "kind": {
+      "enum": [
+        "initial",
+        "step",
+        "terminal"
+      ],
+      "title": "Kind",
+      "type": "string"
+    },
+    "observation": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Observation"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "schema_version": {
+      "const": "1.0",
+      "default": "1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "seq": {
+      "minimum": 0,
+      "title": "Seq",
+      "type": "integer"
+    },
+    "terminal": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/TerminalState"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "tick": {
+      "title": "Tick",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "seq",
+    "tick",
+    "agent_id",
+    "kind",
+    "battery"
+  ],
+  "title": "TraceEvent",
+  "type": "object"
+}

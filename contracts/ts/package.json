@@ -1,0 +1,20 @@
+{
+  "name": "@walle/contracts",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "src/contracts.ts",
+  "types": "src/contracts.ts",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}

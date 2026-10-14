@@ -1,0 +1,36 @@
+:root {
+  color-scheme: dark;
+  font-family: "SF Mono", ui-monospace, monospace;
+  background: #0b0d12;
+  color: #e6e8ee;
+}
+
+.shell {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 48px 24px;
+}
+
+.shell-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.shell-header h1 {
+  font-size: 22px;
+  letter-spacing: -0.02em;
+}
+
+.badge {
+  font-size: 11px;
+  border: 1px solid #2a2f3a;
+  border-radius: 999px;
+  padding: 2px 8px;
+  color: #8b93a7;
+}
+
+.placeholder {
+  color: #8b93a7;
+  margin-top: 24px;
+}

@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "tick": 42,
+  "agent_id": "walle_0",
+  "position": [9, 6],
+  "signal": {
+    "bearing_deg": 137.42,
+    "strength": 0.58,
+    "measured_from": [9, 6],
+    "timestamp_tick": 42
+  },
+  "visible_cells": [
+    {"pos": [9, 6], "kind": "free"},
+    {"pos": [9, 7], "kind": "free"},
+    {"pos": [10, 7], "kind": "recharge"},
+    {"pos": [8, 6], "kind": "free"},
+    {"pos": [9, 5], "kind": "free"}
+  ],
+  "events": [
+    {
+      "type": "clue_discovered",
+      "clue_id": "clue_02",
+      "kind": "scorch_mark",
+      "pos": [9, 3],
+      "description": "Fresh scorch mark on the hull plating — EVE passed through recently.",
+      "tick": 42
+    }
+  ],
+  "battery": 164,
+  "max_battery": 220,
+  "max_ticks": 600,
+  "sensor_status": {"signal": "ok"},
+  "last_action_valid": true,
+  "last_action_error": null
+}

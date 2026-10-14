@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.0",
+  "mission_id": "sample_basic",
+  "seed": 42,
+  "map": {
+    "width": 20,
+    "height": 15,
+    "cell_size": 1.0,
+    "obstacles": [[5, 3], [5, 4], [5, 5], [5, 6], [5, 7], [12, 8], [12, 9], [12, 10], [13, 10], [14, 10]],
+    "home": [1, 1],
+    "recharge_stations": [[10, 7], [3, 12]]
+  },
+  "budget": {
+    "battery": 220,
+    "max_ticks": 600,
+    "action_costs": {"move": 1, "scan": 2, "recharge": 0, "return_home": 0, "declare_found": 1},
+    "recharge_ticks": 5,
+    "reserve_margin": 4
+  },
+  "sensors": {
+    "signal": {
+      "model": "log_normal_path_loss",
+      "reference_distance": 1.0,
+      "reference_power": 1.0,
+      "path_loss_exponent": 4.0,
+      "noise_std_db": 2.0,
+      "bearing_noise_std_deg": 5.0,
+      "max_range": 64,
+      "scan_noise_scale": 0.5
+    },
+    "local_view_radius": 3,
+    "scan_radius": 5,
+    "failure_rate": 0.0
+  },
+  "target": {
+    "placement": [17, 12],
+    "contact_radius": 1,
+    "status": "dormant"
+  },
+  "clues": {
+    "placements": [
+      [[3, 8], "footprint"],
+      [[9, 3], "scorch_mark"],
+      [[15, 5], "plant_sample"],
+      [[16, 13], "waste_scrap"]
+    ],
+    "seed_count": 0,
+    "detection_radius": 1
+  },
+  "decoys": {
+    "count": 1,
+    "seed": 77,
+    "placements": [[7, 13]],
+    "strength_floor": 0.05
+  },
+  "agents": [{"id": "walle_0", "start": [1, 1]}],
+  "planner": "classical"
+}

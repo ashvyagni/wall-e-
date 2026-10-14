@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.0",
+  "seq": 42,
+  "tick": 42,
+  "agent_id": "walle_0",
+  "kind": "step",
+  "action": {"schema_version": "1.0", "type": "scan", "direction": null, "position": null},
+  "observation": {
+    "schema_version": "1.0",
+    "tick": 42,
+    "agent_id": "walle_0",
+    "position": [9, 6],
+    "signal": {
+      "bearing_deg": 137.42,
+      "strength": 0.58,
+      "measured_from": [9, 6],
+      "timestamp_tick": 42
+    },
+    "visible_cells": [
+      {"pos": [9, 6], "kind": "free"},
+      {"pos": [9, 7], "kind": "free"},
+      {"pos": [10, 7], "kind": "recharge"},
+      {"pos": [8, 6], "kind": "free"},
+      {"pos": [9, 5], "kind": "free"}
+    ],
+    "events": [
+      {
+        "type": "clue_discovered",
+        "clue_id": "clue_02",
+        "kind": "scorch_mark",
+        "pos": [9, 3],
+        "description": "Fresh scorch mark on the hull plating — EVE passed through recently.",
+        "tick": 42
+      }
+    ],
+    "battery": 164,
+    "max_battery": 220,
+    "max_ticks": 600,
+    "sensor_status": {"signal": "ok"},
+    "last_action_valid": true,
+    "last_action_error": null
+  },
+  "belief": {
+    "map_pos": [16, 12],
+    "confidence": 0.41,
+    "entropy_bits": 5.72,
+    "top_k": [[[16, 12], 0.41], [[17, 11], 0.18], [[17, 13], 0.12], [[15, 12], 0.07], [[16, 11], 0.05]]
+  },
+  "decision": {
+    "planner": "classical",
+    "action_type": "scan",
+    "reason": "Signal bearing points north-east with rising strength; scanning here reduces belief entropy over the corridor between the two wall gaps at fixed battery cost 2.",
+    "options_considered": ["move(east)", "scan", "recharge"],
+    "extras": {"expected_entropy_reduction_bits": 0.83, "path_cost_home": 21}
+  },
+  "battery": 164,
+  "terminal": null
+}

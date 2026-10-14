@@ -1,0 +1,502 @@
+{
+  "$defs": {
+    "AgentConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "default": "walle_0",
+          "title": "Id",
+          "type": "string"
+        },
+        "start": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Start"
+        }
+      },
+      "title": "AgentConfig",
+      "type": "object"
+    },
+    "BudgetConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "action_costs": {
+          "additionalProperties": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "title": "Action Costs",
+          "type": "object"
+        },
+        "battery": {
+          "exclusiveMinimum": 0,
+          "maximum": 1000000,
+          "title": "Battery",
+          "type": "integer"
+        },
+        "max_ticks": {
+          "exclusiveMinimum": 0,
+          "maximum": 1000000,
+          "title": "Max Ticks",
+          "type": "integer"
+        },
+        "recharge_ticks": {
+          "default": 5,
+          "minimum": 1,
+          "title": "Recharge Ticks",
+          "type": "integer"
+        },
+        "reserve_margin": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Reserve Margin",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "battery",
+        "max_ticks"
+      ],
+      "title": "BudgetConfig",
+      "type": "object"
+    },
+    "CluesConfig": {
+      "additionalProperties": false,
+      "description": "Clue placements/seeds. Evaluator-only: never exposed to planners.",
+      "properties": {
+        "detection_radius": {
+          "default": 1,
+          "maximum": 16,
+          "minimum": 1,
+          "title": "Detection Radius",
+          "type": "integer"
+        },
+        "placements": {
+          "default": [],
+          "items": {
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "maxItems": 2,
+                "minItems": 2,
+                "prefixItems": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "integer"
+                  }
+                ],
+                "type": "array"
+              },
+              {
+                "enum": [
+                  "footprint",
+                  "scorch_mark",
+                  "plant_sample",
+                  "waste_scrap",
+                  "signal_mirror"
+                ],
+                "type": "string"
+              }
+            ],
+            "type": "array"
+          },
+          "title": "Placements",
+          "type": "array"
+        },
+        "seed_count": {
+          "default": 4,
+          "maximum": 64,
+          "minimum": 0,
+          "title": "Seed Count",
+          "type": "integer"
+        }
+      },
+      "title": "CluesConfig",
+      "type": "object"
+    },
+    "DecoysConfig": {
+      "additionalProperties": false,
+      "description": "Spoofed signal sources. Evaluator-only: never exposed to planners.",
+      "properties": {
+        "count": {
+          "default": 0,
+          "maximum": 16,
+          "minimum": 0,
+          "title": "Count",
+          "type": "integer"
+        },
+        "placements": {
+          "default": [],
+          "items": {
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "type": "array"
+          },
+          "title": "Placements",
+          "type": "array"
+        },
+        "seed": {
+          "default": 0,
+          "title": "Seed",
+          "type": "integer"
+        },
+        "strength_floor": {
+          "default": 0.05,
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Strength Floor",
+          "type": "number"
+        }
+      },
+      "title": "DecoysConfig",
+      "type": "object"
+    },
+    "MapConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "cell_size": {
+          "default": 1.0,
+          "exclusiveMinimum": 0,
+          "title": "Cell Size",
+          "type": "number"
+        },
+        "height": {
+          "maximum": 512,
+          "minimum": 2,
+          "title": "Height",
+          "type": "integer"
+        },
+        "home": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            }
+          ],
+          "title": "Home",
+          "type": "array"
+        },
+        "obstacles": {
+          "default": [],
+          "items": {
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "type": "array"
+          },
+          "title": "Obstacles",
+          "type": "array"
+        },
+        "recharge_stations": {
+          "default": [],
+          "items": {
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "type": "array"
+          },
+          "title": "Recharge Stations",
+          "type": "array"
+        },
+        "width": {
+          "maximum": 512,
+          "minimum": 2,
+          "title": "Width",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "width",
+        "height",
+        "home"
+      ],
+      "title": "MapConfig",
+      "type": "object"
+    },
+    "SensorsConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "failure_rate": {
+          "default": 0.0,
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Failure Rate",
+          "type": "number"
+        },
+        "local_view_radius": {
+          "default": 3,
+          "maximum": 16,
+          "minimum": 0,
+          "title": "Local View Radius",
+          "type": "integer"
+        },
+        "scan_radius": {
+          "default": 5,
+          "maximum": 32,
+          "minimum": 1,
+          "title": "Scan Radius",
+          "type": "integer"
+        },
+        "signal": {
+          "$ref": "#/$defs/SignalSensorConfig",
+          "default": {
+            "bearing_noise_std_deg": 5.0,
+            "max_range": 64,
+            "model": "log_normal_path_loss",
+            "noise_std_db": 2.0,
+            "path_loss_exponent": 4.0,
+            "reference_distance": 1.0,
+            "reference_power": 1.0,
+            "scan_noise_scale": 0.5
+          }
+        }
+      },
+      "title": "SensorsConfig",
+      "type": "object"
+    },
+    "SignalSensorConfig": {
+      "additionalProperties": false,
+      "description": "Log-normal path-loss signal sensor.\n\nstrength = clamp((reference_distance / max(d, reference_distance)) ^ path_loss_exponent\n                 * reference_power, 0, 1), then log-normal noise in dB applied\nand squashed back to [0, 1]. bearing includes additive Gaussian noise (degrees).",
+      "properties": {
+        "bearing_noise_std_deg": {
+          "default": 5.0,
+          "minimum": 0,
+          "title": "Bearing Noise Std Deg",
+          "type": "number"
+        },
+        "max_range": {
+          "default": 64,
+          "exclusiveMinimum": 0,
+          "title": "Max Range",
+          "type": "integer"
+        },
+        "model": {
+          "const": "log_normal_path_loss",
+          "default": "log_normal_path_loss",
+          "title": "Model",
+          "type": "string"
+        },
+        "noise_std_db": {
+          "default": 2.0,
+          "minimum": 0,
+          "title": "Noise Std Db",
+          "type": "number"
+        },
+        "path_loss_exponent": {
+          "default": 4.0,
+          "exclusiveMinimum": 0,
+          "title": "Path Loss Exponent",
+          "type": "number"
+        },
+        "reference_distance": {
+          "default": 1.0,
+          "exclusiveMinimum": 0,
+          "title": "Reference Distance",
+          "type": "number"
+        },
+        "reference_power": {
+          "default": 1.0,
+          "exclusiveMinimum": 0,
+          "title": "Reference Power",
+          "type": "number"
+        },
+        "scan_noise_scale": {
+          "default": 0.5,
+          "exclusiveMinimum": 0,
+          "title": "Scan Noise Scale",
+          "type": "number"
+        }
+      },
+      "title": "SignalSensorConfig",
+      "type": "object"
+    },
+    "TargetConfig": {
+      "additionalProperties": false,
+      "description": "EVE's true placement. Evaluator-only: never exposed to planners.",
+      "properties": {
+        "contact_radius": {
+          "default": 1,
+          "maximum": 8,
+          "minimum": 0,
+          "title": "Contact Radius",
+          "type": "integer"
+        },
+        "placement": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Placement"
+        },
+        "status": {
+          "default": "dormant",
+          "enum": [
+            "dormant",
+            "active"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "title": "TargetConfig",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "agents": {
+      "default": [
+        {
+          "id": "walle_0",
+          "start": null
+        }
+      ],
+      "items": {
+        "$ref": "#/$defs/AgentConfig"
+      },
+      "title": "Agents",
+      "type": "array"
+    },
+    "budget": {
+      "$ref": "#/$defs/BudgetConfig"
+    },
+    "clues": {
+      "$ref": "#/$defs/CluesConfig",
+      "default": {
+        "detection_radius": 1,
+        "placements": [],
+        "seed_count": 4
+      }
+    },
+    "decoys": {
+      "$ref": "#/$defs/DecoysConfig",
+      "default": {
+        "count": 0,
+        "placements": [],
+        "seed": 0,
+        "strength_floor": 0.05
+      }
+    },
+    "map": {
+      "$ref": "#/$defs/MapConfig"
+    },
+    "mission_id": {
+      "title": "Mission Id",
+      "type": "string"
+    },
+    "planner": {
+      "default": "classical",
+      "enum": [
+        "classical",
+        "llm"
+      ],
+      "title": "Planner",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1.0",
+      "default": "1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "seed": {
+      "title": "Seed",
+      "type": "integer"
+    },
+    "sensors": {
+      "$ref": "#/$defs/SensorsConfig",
+      "default": {
+        "failure_rate": 0.0,
+        "local_view_radius": 3,
+        "scan_radius": 5,
+        "signal": {
+          "bearing_noise_std_deg": 5.0,
+          "max_range": 64,
+          "model": "log_normal_path_loss",
+          "noise_std_db": 2.0,
+          "path_loss_exponent": 4.0,
+          "reference_distance": 1.0,
+          "reference_power": 1.0,
+          "scan_noise_scale": 0.5
+        }
+      }
+    },
+    "target": {
+      "$ref": "#/$defs/TargetConfig",
+      "default": {
+        "contact_radius": 1,
+        "placement": null,
+        "status": "dormant"
+      }
+    }
+  },
+  "required": [
+    "mission_id",
+    "seed",
+    "map",
+    "budget"
+  ],
+  "title": "MissionConfig",
+  "type": "object"
+}

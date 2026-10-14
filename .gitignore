@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+dist/
+build/
+
+# Node
+node_modules/
+viewer/dist/
+contracts/ts/node_modules/
+*.tsbuildinfo
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Runtime outputs (sample outputs in traces/ and reports/ are committed intentionally)
+runs/
+*.log
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/

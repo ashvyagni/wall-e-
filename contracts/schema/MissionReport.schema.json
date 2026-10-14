@@ -1,0 +1,343 @@
+{
+  "$defs": {
+    "EvaluationSection": {
+      "additionalProperties": false,
+      "description": "Evaluator-only ground truth. Never available to planners.",
+      "properties": {
+        "clues_found": {
+          "title": "Clues Found",
+          "type": "integer"
+        },
+        "clues_total": {
+          "title": "Clues Total",
+          "type": "integer"
+        },
+        "failed_claims": {
+          "default": 0,
+          "title": "Failed Claims",
+          "type": "integer"
+        },
+        "invalid_action_count": {
+          "title": "Invalid Action Count",
+          "type": "integer"
+        },
+        "localization_error": {
+          "minimum": 0,
+          "title": "Localization Error",
+          "type": "number"
+        },
+        "true_eve_pos": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            }
+          ],
+          "title": "True Eve Pos",
+          "type": "array"
+        }
+      },
+      "required": [
+        "true_eve_pos",
+        "localization_error",
+        "clues_total",
+        "clues_found",
+        "invalid_action_count"
+      ],
+      "title": "EvaluationSection",
+      "type": "object"
+    },
+    "EvidenceItem": {
+      "additionalProperties": false,
+      "properties": {
+        "clue_id": {
+          "title": "Clue Id",
+          "type": "string"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "footprint",
+            "scorch_mark",
+            "plant_sample",
+            "waste_scrap",
+            "signal_mirror"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "pos": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            }
+          ],
+          "title": "Pos",
+          "type": "array"
+        },
+        "tick": {
+          "title": "Tick",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "clue_id",
+        "kind",
+        "pos",
+        "description",
+        "tick"
+      ],
+      "title": "EvidenceItem",
+      "type": "object"
+    },
+    "InferenceSection": {
+      "additionalProperties": false,
+      "properties": {
+        "confidence": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "eve_location": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            }
+          ],
+          "title": "Eve Location",
+          "type": "array"
+        },
+        "recommended_next_step": {
+          "title": "Recommended Next Step",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "located",
+            "estimated",
+            "unknown"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "eve_location",
+        "status",
+        "confidence",
+        "recommended_next_step"
+      ],
+      "title": "InferenceSection",
+      "type": "object"
+    },
+    "OutcomeSection": {
+      "additionalProperties": false,
+      "properties": {
+        "battery_remaining": {
+          "title": "Battery Remaining",
+          "type": "integer"
+        },
+        "battery_used": {
+          "title": "Battery Used",
+          "type": "integer"
+        },
+        "steps": {
+          "title": "Steps",
+          "type": "integer"
+        },
+        "successful": {
+          "title": "Successful",
+          "type": "boolean"
+        },
+        "terminal": {
+          "$ref": "#/$defs/TerminalState"
+        },
+        "ticks_used": {
+          "title": "Ticks Used",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "terminal",
+        "successful",
+        "steps",
+        "ticks_used",
+        "battery_used",
+        "battery_remaining"
+      ],
+      "title": "OutcomeSection",
+      "type": "object"
+    },
+    "StrategyPhase": {
+      "additionalProperties": false,
+      "properties": {
+        "end_tick": {
+          "title": "End Tick",
+          "type": "integer"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "note": {
+          "default": "",
+          "title": "Note",
+          "type": "string"
+        },
+        "start_tick": {
+          "title": "Start Tick",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "name",
+        "start_tick",
+        "end_tick"
+      ],
+      "title": "StrategyPhase",
+      "type": "object"
+    },
+    "StrategySummary": {
+      "additionalProperties": false,
+      "properties": {
+        "phases": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/StrategyPhase"
+          },
+          "title": "Phases",
+          "type": "array"
+        },
+        "recharges": {
+          "default": 0,
+          "title": "Recharges",
+          "type": "integer"
+        },
+        "scans": {
+          "default": 0,
+          "title": "Scans",
+          "type": "integer"
+        },
+        "turn_back_tick": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Turn Back Tick"
+        }
+      },
+      "title": "StrategySummary",
+      "type": "object"
+    },
+    "TerminalState": {
+      "enum": [
+        "EVE_LOCATED_SUCCESS",
+        "EVE_LOCATE_FAILED",
+        "RETURNED_NO_EVIDENCE",
+        "BATTERY_EXHAUSTED_ABORTED",
+        "TIMEOUT_ABORTED",
+        "INVALID_ACTION_ABORTED"
+      ],
+      "title": "TerminalState",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "evaluation": {
+      "$ref": "#/$defs/EvaluationSection"
+    },
+    "evidence": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/EvidenceItem"
+      },
+      "title": "Evidence",
+      "type": "array"
+    },
+    "generated_by": {
+      "default": "walle",
+      "title": "Generated By",
+      "type": "string"
+    },
+    "inference": {
+      "$ref": "#/$defs/InferenceSection"
+    },
+    "mission_id": {
+      "title": "Mission Id",
+      "type": "string"
+    },
+    "notes": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Notes",
+      "type": "array"
+    },
+    "outcome": {
+      "$ref": "#/$defs/OutcomeSection"
+    },
+    "planner": {
+      "title": "Planner",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1.0",
+      "default": "1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "seed": {
+      "title": "Seed",
+      "type": "integer"
+    },
+    "strategy": {
+      "$ref": "#/$defs/StrategySummary",
+      "default": {
+        "phases": [],
+        "recharges": 0,
+        "scans": 0,
+        "turn_back_tick": null
+      }
+    },
+    "trace_path": {
+      "title": "Trace Path",
+      "type": "string"
+    }
+  },
+  "required": [
+    "mission_id",
+    "seed",
+    "planner",
+    "outcome",
+    "inference",
+    "evaluation",
+    "trace_path"
+  ],
+  "title": "MissionReport",
+  "type": "object"
+}
