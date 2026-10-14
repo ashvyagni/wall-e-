@@ -118,6 +118,7 @@ export const missionConfigSchema = z
         placements: z.array(z.tuple([pos, clueKindSchema])),
         seed_count: z.number().int().min(0).max(64),
         detection_radius: z.number().int().min(1).max(16),
+        spawn_radius: z.number().int().min(0).max(64).default(3),
       })
       .strict(),
     decoys: z
@@ -126,6 +127,7 @@ export const missionConfigSchema = z
         seed: z.number().int(),
         placements: z.array(pos),
         strength_floor: z.number().min(0).max(1),
+        min_clue_distance: z.number().int().min(0).max(64).default(4),
       })
       .strict(),
     agents: z

@@ -102,15 +102,47 @@ def _seeded_positions(
     count: int,
     cfg: MissionConfig,
     taken: set[Pos],
+    *,
+    near: Pos | None = None,
+    near_radius: int = 0,
+    keep_away_from: tuple[Pos, ...] = (),
+    keep_away_min: int = 0,
 ) -> list[Pos]:
-    """Deterministic sample of free cells, avoiding home/taken cells."""
+    """Deterministic sample of free cells, avoiding home/taken cells.
+
+    With ``near`` set, prefer cells within ``near_radius`` chebyshev distance
+    of that position (the clue-vs-EVE proximity prior); unfilled slots fall
+    back to uniform sampling over the whole map. ``keep_away`` rejects cells
+    closer than ``keep_away_min`` to any of those positions (decoy-vs-clue
+    exclusion) before sampling.
+    """
     blocked = taken | {cfg.map.home, *cfg.map.obstacles, *cfg.map.recharge_stations}
-    free = sorted(
+    free = [
         (x, y)
         for x in range(cfg.map.width)
         for y in range(cfg.map.height)
         if (x, y) not in blocked
-    )
+    ]
+    if keep_away_from:
+        free = [
+            c
+            for c in free
+            if all(
+                max(abs(c[0] - o[0]), abs(c[1] - o[1])) >= keep_away_min
+                for o in keep_away_from
+            )
+        ]
+    if near is not None:
+        local = [
+            c for c in free if max(abs(c[0] - near[0]), abs(c[1] - near[1])) <= near_radius
+        ]
+        rng.shuffle(local)
+        picked = local[:count]
+        if len(picked) >= count:
+            return picked
+        rest = [c for c in free if c not in set(picked)]
+        rng.shuffle(rest)
+        return picked + rest[: count - len(picked)]
     rng.shuffle(free)
     return free[:count]
 
@@ -151,7 +183,14 @@ def build_world(cfg: MissionConfig) -> World:
             )
         )
     if cfg.clues.seed_count > 0:
-        seeded = _seeded_positions(rng, cfg.clues.seed_count, cfg, blocked)
+        seeded = _seeded_positions(
+            rng,
+            cfg.clues.seed_count,
+            cfg,
+            blocked,
+            near=eve_pos,
+            near_radius=cfg.clues.spawn_radius,
+        )
         for j, pos in enumerate(seeded):
             kind = _CLUE_KINDS[(cfg.seed + j) % len(_CLUE_KINDS)]
             blocked.add(pos)
@@ -164,14 +203,39 @@ def build_world(cfg: MissionConfig) -> World:
                 )
             )
 
-    # Decoys
+    # Decoys: explicit placements first (validated against clues), then seeded
+    # with a hard exclusion zone around every clue so a declare cell backed by
+    # an adjacent clue can never be a decoy.
     decoys: list[Pos] = list(cfg.decoys.placements)
+    clue_cells = [c.pos for c in clues]
     for pos in decoys:
         if pos in cfg.map.obstacles:
             raise ValueError(f"decoy placement {pos} is an obstacle")
+        too_close = [
+            c
+            for c in clue_cells
+            if max(abs(pos[0] - c[0]), abs(pos[1] - c[1])) < cfg.decoys.min_clue_distance
+        ]
+        if too_close:
+            raise ValueError(
+                f"decoy placement {pos} violates decoys.min_clue_distance="
+                f"{cfg.decoys.min_clue_distance}: too close to clue(s) {too_close}"
+            )
         blocked.add(pos)
     if cfg.decoys.count > len(decoys):
-        extra = _seeded_positions(rng, cfg.decoys.count - len(decoys), cfg, blocked)
+        extra = _seeded_positions(
+            rng,
+            cfg.decoys.count - len(decoys),
+            cfg,
+            blocked,
+            keep_away_from=tuple(clue_cells),
+            keep_away_min=cfg.decoys.min_clue_distance,
+        )
+        if len(extra) < cfg.decoys.count - len(decoys):
+            raise ValueError(
+                "map has no free cell for a decoy that respects "
+                f"decoys.min_clue_distance={cfg.decoys.min_clue_distance} from all clues"
+            )
         for pos in extra:
             blocked.add(pos)
         decoys.extend(extra)

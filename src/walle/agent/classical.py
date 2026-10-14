@@ -30,8 +30,11 @@ from walle.contracts import (
 )
 from walle.env import pathing
 
-DECLARE_CONFIDENCE = 0.55
+INVESTIGATE_CONFIDENCE = 0.5  # approach the MAP cell and verify before declaring
+EVIDENCE_CONFIDENCE = 0.75  # required to declare with a corroborating clue
+DECLARE_CONFIDENCE = 0.9  # required when there are no clues to corroborate
 CORROBORATE_RADIUS = 3
+_MAX_SCANS_PER_REGION = 6
 _FRONTIER_BONUS = 0.35
 _STRENGTH_BINS = 8
 _BEARING_BINS = 12
@@ -53,6 +56,10 @@ class ClassicalPlanner:
         self._move_cost = view.budget.action_costs["move"]
         self._scan_cost = view.budget.action_costs["scan"]
         self._declare_mode = False
+        self._scanned: list[Pos] = []
+        self._last_unconfirmed: Pos | None = None
+        self._departed_map: Pos | None = None
+        self._departed_conf: float = 0.0
 
     # ------------------------------------------------------------------ helpers
 
@@ -145,19 +152,26 @@ class ClassicalPlanner:
     # ------------------------------------------------------------------ policy
 
     def _escape_direction(
-        self, pos: Pos, dist: dict[Pos, int], first: dict[Pos, MoveDirection]
+        self, pos: Pos, from_map: Pos, dist: dict[Pos, int], first: dict[Pos, MoveDirection]
     ) -> MoveDirection:
-        """Move toward the highest-belief cell that is not a suspected region."""
-        best_map = self.belief.map_pos()
-        target = best_map
-        for (px, py), _p in self.belief.top_k(8):
-            if not self.belief.near_suspected((px, py)):
+        """Move toward the highest-belief cell *away from* the current MAP cell.
+
+        Staying inside the corroboration radius would just oscillate back into
+        contact, so only cells outside that radius are escape targets.
+        """
+        target: Pos | None = None
+        for (px, py), _p in self.belief.top_k(12):
+            if (
+                max(abs(px - from_map[0]), abs(py - from_map[1])) > CORROBORATE_RADIUS + 1
+                and not self.belief.near_suspected((px, py))
+            ):
                 target = (px, py)
                 break
-        step = first.get(target)
-        if step is not None:
-            return step
-        # fallback: move to the reachable cell farthest from the suspect
+        if target is not None:
+            step = first.get(target)
+            if step is not None:
+                return step
+        # fallback: first step toward the reachable cell farthest from the MAP
         fallback: MoveDirection = "north"
         best_d = -1
         for cell, _d in dist.items():
@@ -166,12 +180,9 @@ class ClassicalPlanner:
             step2 = first.get(cell)
             if step2 is None:
                 continue
-            dist_from_sus = min(
-                (abs(cell[0] - s[0]) + abs(cell[1] - s[1]) for s in self.belief.suspected_regions),
-                default=0,
-            )
-            if dist_from_sus > best_d:
-                best_d = dist_from_sus
+            d_from_map = abs(cell[0] - from_map[0]) + abs(cell[1] - from_map[1])
+            if d_from_map > best_d:
+                best_d = d_from_map
                 fallback = step2
         return fallback
 
@@ -189,8 +200,19 @@ class ClassicalPlanner:
         cost_home = dist.get(cfg.map.home)
         reserve = w.reserve_margin
 
-        # 1. declare when confident and in reach of the MAP cell
-        if conf >= DECLARE_CONFIDENCE:
+        # 1. investigate when the MAP cell is plausible: approach it and verify
+        #    with clue corroboration (or very high confidence if no clues exist).
+        #    While departed to gather fresh readings (corroborated but belief
+        #    stuck), suspend the approach until the belief actually moves.
+        if self._departed_map is not None:
+            if (
+                conf > self._departed_conf + 0.05
+                or map_pos != self._departed_map
+            ):
+                self._departed_map = None
+            else:
+                self._declare_mode = False
+        if conf >= INVESTIGATE_CONFIDENCE and self._departed_map is None:
             self._declare_mode = True
         if self._declare_mode:
             reach = max(abs(pos[0] - map_pos[0]), abs(pos[1] - map_pos[1]))
@@ -201,30 +223,109 @@ class ClassicalPlanner:
                     for c in self.discovered_clues
                 )
                 no_clues_left = self.view.clue_count == 0
-                if corroborated or no_clues_left:
+                if corroborated and conf >= EVIDENCE_CONFIDENCE:
+                    return Decision(
+                        action=Action.declare_found(map_pos),
+                        planner=self.planner_name,
+                        reason=(
+                            f"confidence {conf:.2f} with a discovered clue within "
+                            f"{CORROBORATE_RADIUS} cells of MAP cell {map_pos}; "
+                            "corroborated, declaring"
+                        ),
+                        extras={"confidence": conf, "corroborated": True},
+                    )
+                if no_clues_left and conf >= DECLARE_CONFIDENCE:
                     return Decision(
                         action=Action.declare_found(map_pos),
                         planner=self.planner_name,
                         reason=(
                             f"belief confidence {conf:.2f} >= {DECLARE_CONFIDENCE}; "
-                            f"{'clue corroborated ' if corroborated else 'no clues configured; '}"
-                            f"declaring at MAP cell {map_pos}"
+                            "no clues configured; declaring at MAP cell "
+                            f"{map_pos}"
                         ),
-                        extras={"confidence": conf, "corroborated": corroborated},
+                        extras={"confidence": conf, "corroborated": False},
                     )
-                # high confidence but zero physical evidence nearby: suspect a
-                # spoofed beacon, suppress the region, cool the belief, move on
-                self.belief.suspect_spoof(map_pos)
+                # scan/hold: may reveal more clues and buys ticks for the belief
+                # to concentrate on the source at hand (clues spawn near EVE, so
+                # a real EVE cell always has one within scan range)
+                region_scans = sum(
+                    1
+                    for s in self._scanned
+                    if max(abs(map_pos[0] - s[0]), abs(map_pos[1] - s[1]))
+                    <= CORROBORATE_RADIUS
+                )
+                if (
+                    not no_clues_left
+                    and region_scans < _MAX_SCANS_PER_REGION
+                    and obs.battery >= self._scan_cost + reserve
+                ):
+                    self._scanned.append(map_pos)
+                    self.scans += 1
+                    if corroborated:
+                        why = (
+                            f"corroborated but confidence {conf:.2f} still below "
+                            f"{EVIDENCE_CONFIDENCE}; re-observing at {map_pos}"
+                        )
+                    else:
+                        why = (
+                            f"reached plausible cell {map_pos} (conf {conf:.2f}) "
+                            "without clue evidence; scanning for corroboration"
+                        )
+                    return Decision(
+                        action=Action.scan(),
+                        planner=self.planner_name,
+                        reason=why,
+                        extras={"confidence": conf, "scanning_at": list(map_pos)},
+                    )
+                # still uncorroborated after arrival/scans: a repeated failure in
+                # the same region means the beacon is spoofed — reject it for
+                # good. Only clue-bearing missions can corroborate, so clueless
+                # missions never mask (there is nothing to fail against).
+                if (
+                    not corroborated
+                    and not no_clues_left
+                    and self._last_unconfirmed is not None
+                    and max(
+                        abs(map_pos[0] - self._last_unconfirmed[0]),
+                        abs(map_pos[1] - self._last_unconfirmed[1]),
+                    )
+                    <= CORROBORATE_RADIUS
+                ):
+                    self.belief.suspect_spoof(map_pos)
+                    self._declare_mode = False
+                    self._last_unconfirmed = None
+                    return Decision(
+                        action=Action.move(
+                            self._escape_direction(pos, map_pos, dist, first)
+                        ),
+                        planner=self.planner_name,
+                        reason=(
+                            f"region around {map_pos} again confident (conf {conf:.2f}) "
+                            "but failed clue corroboration twice; rejecting it as a "
+                            "spoofed beacon and resuming search"
+                        ),
+                        extras={"suspected_spoof_at": list(map_pos), "confidence": conf},
+                    )
+                if corroborated:
+                    # corroborated but the belief is stuck (e.g. every nearby
+                    # reading comes from a rejected source): break contact and
+                    # let exploration gather readings from far enough away
+                    self._departed_map = map_pos
+                    self._departed_conf = conf
+                    self._declare_mode = False
+                    return None
+                self._last_unconfirmed = map_pos
                 self._declare_mode = False
+                why = (
+                    f"reached plausible cell {map_pos} (conf {conf:.2f}) with no "
+                    f"clue within {CORROBORATE_RADIUS} cells; not declaring yet, "
+                    "stepping away to gather independent evidence"
+                )
                 return Decision(
-                    action=Action.move(self._escape_direction(pos, dist, first)),
+                    action=Action.move(self._escape_direction(pos, map_pos, dist, first)),
                     planner=self.planner_name,
-                    reason=(
-                        f"reached high-confidence cell {map_pos} (conf {conf:.2f}) with no "
-                        f"clue evidence within {CORROBORATE_RADIUS} cells; suspecting a "
-                        "spoofed signal, suppressing region and resuming search"
-                    ),
-                    extras={"suspected_spoof_at": list(map_pos), "confidence": conf},
+                    reason=why,
+                    extras={"confidence": conf, "map_pos": list(map_pos)},
                 )
             d_map = dist.get(map_pos)
             if d_map is not None and d_map * self._move_cost <= obs.battery:
@@ -284,6 +385,29 @@ class ClassicalPlanner:
                         f"turning back (return cost {cost_home * self._move_cost})"
                     ),
                 )
+            # stranded: reserve is already spent and no action above is
+            # affordable — limp toward home so the EIG loop can never pick an
+            # action the validator will reject (that aborts the mission).
+            step = first.get(cfg.map.home)
+            if step is None:
+                # unreachable home: any reachable neighbor is still a legal move
+                x, y = pos
+                for dx, dy in ((0, 1), (0, -1), (1, 0), (-1, 0)):
+                    nxt = first.get((x + dx, y + dy))
+                    if nxt is not None:
+                        step = nxt
+                        break
+            if step is None:
+                step = "north"
+            return Decision(
+                action=Action.move(step),
+                planner=self.planner_name,
+                reason=(
+                    f"battery {obs.battery} with reserve spent and no feasible "
+                    "return/recharge; taking a minimal step"
+                ),
+                extras={"limp": True},
+            )
 
         return None
 

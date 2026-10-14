@@ -76,11 +76,21 @@ terminates `INVALID_ACTION_ABORTED`.
 ## Hidden-state boundary
 
 - **Planner-visible:** `MissionConfig.agent_view()` = map geometry (bounds, obstacles,
-  home, recharge stations), `budget`, `sensors`, own agent id/start. Plus the per-tick
-  `Observation`.
-- **Planner-hidden (env-internal):** `target.placement`, `clues.*` (placements and
-  seeds), `decoys.*` (placements and seeds), and any derivation thereof. Seeds are
+  home, recharge stations), `budget`, `sensors`, own agent id/start, plus game-rule
+  parameters `target.contact_radius` and total `clue_count` (never where they are).
+  Plus the per-tick `Observation`.
+- **Planner-hidden (env-internal):** `target.placement`, `clues.*` (placements,
+  seeds, and the `spawn_radius` proximity prior), `decoys.*` (placements, seeds,
+  and the `min_clue_distance` exclusion), and any derivation thereof. Seeds are
   hidden because they would allow reconstruction of truth.
+- **Clue placement prior (env-internal):** seeded clues spawn within
+  `clues.spawn_radius` chebyshev cells of EVE ("EVE left them behind"), with
+  `spawn_radius <= 3` so any discovered clue corroborates a declare at true EVE.
+  The planner is not told the radius — it only uses the observed clue locations.
+- **Decoy exclusion (env-internal):** no decoy is ever placed within
+  `decoys.min_clue_distance` (> corroboration radius 3) of any clue. Together
+  with the spawn prior this keeps corroboration sound: "a discovered clue within
+  3 cells of the declare cell" can only be true EVE, never a decoy.
 - The classical planner and the LLM planner receive byte-identical `Observation`
   documents. Enforcement: `tests/test_hidden_state.py` (serialization property tests,
   clue-discovery ordering, planner API signature).

@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from walle.contracts import Action, MissionConfig, TerminalState
 from walle.env.environment import MAX_CONSECUTIVE_INVALID, Environment
 
@@ -205,3 +207,31 @@ def test_signal_reading_shape() -> None:
 
     assert "distance" not in SignalReading.model_fields
     assert "source" not in SignalReading.model_fields
+
+
+def test_seeded_clues_spawn_near_eve() -> None:
+    cfg = load_cfg(**{"clues.placements": [], "clues.seed_count": 4})
+    env = Environment(cfg)
+    eve = env.world.eve_pos
+    radius = cfg.clues.spawn_radius
+    seeded = [c for c in env.world.clues if c.clue_id.startswith("clue_seed")]
+    assert len(seeded) == 4
+    for c in seeded:
+        assert max(abs(c.pos[0] - eve[0]), abs(c.pos[1] - eve[1])) <= radius
+
+
+def test_seeded_decoys_stay_away_from_clues() -> None:
+    cfg = load_cfg(**{"decoys.placements": [], "decoys.count": 2})
+    env = Environment(cfg)
+    min_d = cfg.decoys.min_clue_distance
+    clue_cells = [c.pos for c in env.world.clues]
+    assert env.world.decoys
+    for d in env.world.decoys:
+        for c in clue_cells:
+            assert max(abs(d[0] - c[0]), abs(d[1] - c[1])) >= min_d
+
+
+def test_explicit_decoy_too_close_to_clue_is_rejected() -> None:
+    cfg = load_cfg(**{"decoys.placements": [[3, 9]]})  # fixture clue at [3, 8]
+    with pytest.raises(ValueError, match="min_clue_distance"):
+        Environment(cfg)

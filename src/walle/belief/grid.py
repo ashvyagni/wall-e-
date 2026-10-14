@@ -146,6 +146,14 @@ class BeliefGrid:
             visible = d <= s_cfg.max_range
             lik = np.where(visible, lik_s * lik_b, _LIK_FLOOR)
 
+            if self.suspected_regions:
+                # A reading whose best explanation sits inside a rejected region
+                # comes from a spoofed source. Ignoring it prevents mask
+                # boundaries from manufacturing phantom high-confidence cells.
+                iy, ix = np.unravel_index(int(np.argmax(lik)), lik.shape)
+                if self.near_suspected((int(ix), int(iy))):
+                    return
+
         lik = np.maximum(lik, _LIK_FLOOR)
         # rejected spoof regions are filtered out of future evidence
         lik = self._mask_likelihood(lik, at)

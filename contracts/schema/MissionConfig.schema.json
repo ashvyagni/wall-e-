@@ -129,6 +129,13 @@
           "minimum": 0,
           "title": "Seed Count",
           "type": "integer"
+        },
+        "spawn_radius": {
+          "default": 3,
+          "maximum": 64,
+          "minimum": 0,
+          "title": "Spawn Radius",
+          "type": "integer"
         }
       },
       "title": "CluesConfig",
@@ -143,6 +150,13 @@
           "maximum": 16,
           "minimum": 0,
           "title": "Count",
+          "type": "integer"
+        },
+        "min_clue_distance": {
+          "default": 4,
+          "maximum": 64,
+          "minimum": 0,
+          "title": "Min Clue Distance",
           "type": "integer"
         },
         "placements": {
@@ -426,13 +440,15 @@
       "default": {
         "detection_radius": 1,
         "placements": [],
-        "seed_count": 4
+        "seed_count": 4,
+        "spawn_radius": 3
       }
     },
     "decoys": {
       "$ref": "#/$defs/DecoysConfig",
       "default": {
         "count": 0,
+        "min_clue_distance": 4,
         "placements": [],
         "seed": 0,
         "strength_floor": 0.05

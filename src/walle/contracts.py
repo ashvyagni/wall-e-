@@ -164,6 +164,11 @@ class CluesConfig(StrictModel):
     placements: tuple[tuple[Pos, ClueKind], ...] = ()
     seed_count: Annotated[int, Field(ge=0, le=64)] = 4
     detection_radius: Annotated[int, Field(ge=1, le=16)] = 1
+    # Seeded clues spawn within this chebyshev radius of EVE (the narrative
+    # prior: "EVE left them behind"). Must be <= the planner's corroboration
+    # radius (3) so any discovered clue corroborates a declare at true EVE.
+    # Evaluator-only; never exposed to planners.
+    spawn_radius: Annotated[int, Field(ge=0, le=64)] = 3
 
     @model_validator(mode="before")
     @classmethod
@@ -184,6 +189,11 @@ class DecoysConfig(StrictModel):
     seed: int = 0
     placements: tuple[Pos, ...] = ()
     strength_floor: Annotated[float, Field(ge=0, le=1)] = 0.05
+    # No decoy may sit within this chebyshev distance of any clue. This keeps
+    # "a clue corroborates the declare cell" statistically valid: a MAP cell
+    # next to a clue can then only be true EVE, never a decoy. Must be >
+    # the planner's corroboration radius (3). Evaluator-only.
+    min_clue_distance: Annotated[int, Field(ge=0, le=64)] = 4
 
     @model_validator(mode="before")
     @classmethod

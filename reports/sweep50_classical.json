@@ -1,0 +1,13 @@
+{
+  "n": 50,
+  "successes": 48,
+  "success_rate": 0.96,
+  "terminals": {
+    "EVE_LOCATED_SUCCESS": 48,
+    "RETURNED_NO_EVIDENCE": 2
+  },
+  "mean_steps": 38.5,
+  "mean_error": 0.53732,
+  "planner": "classical",
+  "template": "configs/sample_basic.json"
+}
