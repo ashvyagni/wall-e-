@@ -238,7 +238,9 @@ class MissionConfig(StrictModel):
         """Redacted config handed to planners: geometry, budget, sensors only.
 
         Strips every evaluator-only section (target, clues, decoys) including
-        their seeds, so a planner cannot reconstruct ground truth.
+        their seeds, so a planner cannot reconstruct ground truth. Game-rule
+        parameters the agent must know to act (declare reach, whether clues
+        exist in total) are included; never their locations or seeds.
         """
         return {
             "schema_version": self.schema_version,
@@ -247,6 +249,8 @@ class MissionConfig(StrictModel):
             "budget": self.budget.model_dump(mode="json"),
             "sensors": self.sensors.model_dump(mode="json"),
             "agent": self.agents[0].model_dump(mode="json"),
+            "contact_radius": self.target.contact_radius,
+            "clue_count": len(self.clues.placements) + self.clues.seed_count,
         }
 
 

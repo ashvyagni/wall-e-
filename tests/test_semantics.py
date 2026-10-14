@@ -61,9 +61,20 @@ def test_agent_view_strips_all_ground_truth() -> None:
 
 def test_agent_view_keeps_geometry_budget_sensors() -> None:
     view = _config().agent_view()
-    assert set(view) == {"schema_version", "mission_id", "map", "budget", "sensors", "agent"}
+    assert set(view) == {
+        "schema_version",
+        "mission_id",
+        "map",
+        "budget",
+        "sensors",
+        "agent",
+        "contact_radius",
+        "clue_count",
+    }
     assert view["map"]["home"] == [1, 1]
     assert view["budget"]["battery"] == 220
+    assert view["contact_radius"] == 1
+    assert view["clue_count"] == 4
 
 
 def test_agent_view_does_not_alias_original() -> None:

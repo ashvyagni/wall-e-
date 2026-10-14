@@ -1,0 +1,82 @@
+{
+  "schema_version": "1.0",
+  "mission_id": "sample_basic",
+  "seed": 42,
+  "planner": "classical",
+  "generated_by": "walle",
+  "outcome": {
+    "terminal": "EVE_LOCATED_SUCCESS",
+    "successful": true,
+    "steps": 63,
+    "ticks_used": 63,
+    "battery_used": 63,
+    "battery_remaining": 157
+  },
+  "evidence": [
+    {
+      "clue_id": "clue_01",
+      "kind": "footprint",
+      "pos": [
+        3,
+        8
+      ],
+      "description": "Tread pattern matches EVE's hull unit.",
+      "tick": 9
+    },
+    {
+      "clue_id": "clue_03",
+      "kind": "plant_sample",
+      "pos": [
+        15,
+        5
+      ],
+      "description": "Sampled sprout with EVE's coolant residue on the leaves.",
+      "tick": 52
+    },
+    {
+      "clue_id": "clue_04",
+      "kind": "waste_scrap",
+      "pos": [
+        16,
+        13
+      ],
+      "description": "Compact scrap stamped with an ejector serial near EVE's bay.",
+      "tick": 61
+    }
+  ],
+  "inference": {
+    "eve_location": [
+      17,
+      12
+    ],
+    "status": "located",
+    "confidence": 1.0,
+    "recommended_next_step": "EVE located and confirmed by declare_found; return home with the evidence log and stand by for directive."
+  },
+  "strategy": {
+    "phases": [
+      {
+        "name": "search",
+        "start_tick": 0,
+        "end_tick": 63,
+        "note": "EIG-driven search with belief updates"
+      }
+    ],
+    "recharges": 0,
+    "scans": 0,
+    "turn_back_tick": null
+  },
+  "evaluation": {
+    "true_eve_pos": [
+      17,
+      12
+    ],
+    "localization_error": 0.0,
+    "clues_total": 4,
+    "clues_found": 3,
+    "invalid_action_count": 0,
+    "failed_claims": 0
+  },
+  "trace_path": "traces/sample_basic.jsonl",
+  "notes": []
+}
